@@ -22,20 +22,19 @@ function M.install(callback)
         command = {vim.g.nvim_ghost_scripts_dir .. 'install_binary.sh'}
     end
 
-    vim.cmd.split()
-    vim.cmd.enew()
-
-    vim.fn.jobstart(command,{
-        term = true,
-        on_exit = function(_,code)
-            if code == 0 then
-                notify('Binary installed sucessfully')
-                callback()
-            else
-                notify('Binary installation failed (exit code: ' .. code .. ')',vim.log.levels.ERROR)
-            end
-        end,
-    })
+    vim.system(command,vim.schedule_wrap(function(job)
+        local level
+        if job.code ~= 0 then
+            level = vim.log.levels.ERROR
+        end
+        vim.notify(job.stdout .. job.stderr,level)
+        if job.code == 0 then
+            notify('Binary installed sucessfully')
+            callback()
+        else
+            notify('Binary installation failed (exit code: ' .. job.code .. ')',level)
+        end
+    end))
 end
 
 return M
