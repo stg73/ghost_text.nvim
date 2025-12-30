@@ -1,52 +1,24 @@
 local M = {}
 
--- Config
-vim.g.nvim_ghost_use_script       = vim.g.nvim_ghost_use_script or false
-vim.g.nvim_ghost_super_quiet      = vim.g.nvim_ghost_super_quiet or false
-vim.g.nvim_ghost_logging_enabled  = vim.g.nvim_ghost_logging_enabled or false
-vim.g.nvim_ghost_server_port      = vim.g.nvim_ghost_server_port or vim.env.GHOSTTEXT_SERVER_PORT or 4001
-
-local function script_path()
-  return debug.getinfo(2,'S').source:sub(2)
-end
-vim.g.nvim_ghost_installation_dir   = vim.fs.dirname(vim.fs.dirname(script_path())) .. "/"
-vim.g.nvim_ghost_scripts_dir        = vim.g.nvim_ghost_installation_dir .. 'scripts' .. '/'
-
--- Files
-vim.g.nvim_ghost_script_path = vim.g.nvim_ghost_installation_dir .. 'binary.py'
-vim.g.nvim_ghost_binary_path = vim.g.nvim_ghost_installation_dir .. 'nvim-ghost-binary' .. (vim.fn.has('win32') and '.exe' or '')
-
-local function bool_to_number(x)
-    if x then
-        return 1
-    else
-        return 0
-    end
-end
-
--- Setup environment
-vim.env.NVIM_LISTEN_ADDRESS        = vim.v.servername
-vim.env.NVIM_GHOST_SUPER_QUIET     = bool_to_number(vim.g.nvim_ghost_super_quiet)
-vim.env.NVIM_GHOST_LOGGING_ENABLED = bool_to_number(vim.g.nvim_ghost_logging_enabled)
-vim.env.GHOSTTEXT_SERVER_PORT      = vim.g.nvim_ghost_server_port
+local config = require("ghost_text.config")
 
 -- Abort if script_mode is enabled but infeasible
-if vim.g.nvim_ghost_use_script then
+if config.use_script then
     if vim.fn.has("win32") == 1 then
         vim.notify("Sorry, g:nvim_ghost_use_script is currently not available on Windows. Please remove it from your init.vim to use nvim-ghost.",vim.log.levels.WARN)
-    elseif not vim.g.nvim_ghost_python_executable then
+    elseif not config.python_executable then
         vim.notify("Please set g:nvim_ghost_python_executable to the location of the python executable",vim.log.levels.WARN)
     end
 end
 
 function M.start()
-    local use_script = vim.g.nvim_ghost_use_script
-    local binary_available = vim.fn.filereadable(vim.g.nvim_ghost_binary_path) == 1
+    local use_script = config.use_script
+    local binary_available = vim.fn.filereadable(config.binary_path) == 1
     local versions_differ
     if binary_available then
         versions_differ =
-        vim.fn.readfile(vim.g.nvim_ghost_installation_dir .. "binary_version")[0] ~=
-        vim.fn.readfile(vim.g.nvim_ghost_binary_path .. ".version")[0]
+        vim.fn.readfile(config.installation_dir .. "binary_version")[0] ~=
+        vim.fn.readfile(config.binary_path .. ".version")[0]
     end
 
     if use_script and (not binary_available or versions_differ) then
@@ -96,14 +68,14 @@ function M.enable()
     -- Compatibility for terminals that do not support focus
     -- Uses CursorMoved to detect focus
 
-    if not vim.g._nvim_ghost_supports_focus then
-        vim.g._nvim_ghost_supports_focus = false
+    if not config.supports_focus then
+        config.supports_focus = false
 
         -- vint: next-line -ProhibitAutocmdWithNoGroup
         vim.api.nvim_create_autocmd({"FocusGained","FocusLost"},{
             once = true,
             callback = function()
-                vim.g._nvim_ghost_supports_focus = true
+                config.supports_focus = true
                 vim.api.nvim_clear_autocmds({ group = "_nvim_ghost_does_not_support_focus" })
             end
         })

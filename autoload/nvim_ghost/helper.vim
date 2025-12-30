@@ -1,3 +1,5 @@
+let s:config = v:lua.require("ghost_text.config")
+
 if !has('nvim')
   finish
 endif
@@ -10,13 +12,13 @@ endif
 
 let s:saved_updatetime = &updatetime
 let s:can_use_cursorhold = v:false
-let s:joblog_arguments = !g:nvim_ghost_logging_enabled ? {} : {
+let s:joblog_arguments = !s:config.logging_enabled ? {} : {
       \'on_stdout':{id,data,type->nvim_ghost#helper#joboutput_logger(data,type)},
       \'on_stderr':{id,data,type->nvim_ghost#helper#joboutput_logger(data,type)},
       \}
 let s:joblog_arguments_nokill = extend(copy(s:joblog_arguments), {
       \'detach': v:true,
-      \'cwd': g:nvim_ghost_installation_dir,
+      \'cwd': s:config.installation_dir,
       \})
 
 function! nvim_ghost#helper#is_running() abort  " {{{1
@@ -57,7 +59,7 @@ function! s:send_GET_request(url) abort "{{{1
   let v:errmsg = ''
   silent! let l:connection = sockconnect('tcp', l:url, l:opts)
   if v:errmsg !=# '' || l:connection == 0
-    if g:nvim_ghost_super_quiet != 1
+    if s:config.super_quiet != 1
       echohl WarningMsg
       echom '[nvim-ghost] Could not connect to ' . l:url
       echohl None
@@ -82,15 +84,15 @@ endfunction
 function! nvim_ghost#helper#start_server() abort " {{{1
   if has('win32')
     call jobstart(['cscript.exe',
-          \g:nvim_ghost_scripts_dir . 'start_server.vbs'])
+          \s:config.scripts_dir . 'start_server.vbs'])
   else
-    if g:nvim_ghost_use_script
+    if s:config.use_script
       call jobstart(
-            \[g:nvim_ghost_python_executable, g:nvim_ghost_script_path],
+            \[s:config.python_executable, s:config.script_path],
             \s:joblog_arguments_nokill
             \)
     else
-      call jobstart([g:nvim_ghost_binary_path], s:joblog_arguments_nokill)
+      call jobstart([s:config.binary_path], s:joblog_arguments_nokill)
     endif
   endif
 endfunction
@@ -108,7 +110,7 @@ function! nvim_ghost#helper#session_closed() abort " {{{1
   call rpcnotify(0, "nvim_ghost_exit_event")
 endfunction
 function! nvim_ghost#helper#joboutput_logger(data,type) abort  " {{{1
-  if !g:nvim_ghost_logging_enabled || g:nvim_ghost_super_quiet
+  if !s:config.logging_enabled || s:config.super_quiet
     return
   endif
   if a:type ==# 'stderr'

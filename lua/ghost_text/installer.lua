@@ -11,15 +11,16 @@ function M.install(callback)
 
     notify('Downloading binary')
 
+    local scripts_dir = require("ghost_text.config").scripts_dir
     local command
     if vim.fn.has('win32') == 1 then
         local powershell = "pwsh.exe"
         if vim.fn.executable("pwsh.exe") == 0 then
             powershell = "powershell.exe"
         end
-        command = {powershell,"-File",vim.g.nvim_ghost_scripts_dir .. 'install_binary.ps1'}
+        command = {powershell,"-File",scripts_dir .. 'install_binary.ps1'}
     else
-        command = {vim.g.nvim_ghost_scripts_dir .. 'install_binary.sh'}
+        command = {scripts_dir .. 'install_binary.sh'}
     end
 
     vim.system(command,vim.schedule_wrap(function(job)
