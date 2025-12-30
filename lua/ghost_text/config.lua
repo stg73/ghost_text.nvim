@@ -9,7 +9,7 @@ M.server_port      = M.server_port or vim.env.GHOSTTEXT_SERVER_PORT or 4001
 local function script_path()
   return debug.getinfo(2,'S').source:sub(2)
 end
-M.installation_dir   = vim.fs.dirname(vim.fs.dirname(script_path())) .. "/"
+M.installation_dir   = vim.fs.dirname(vim.fs.dirname(vim.fs.dirname(script_path()))) .. "/"
 M.scripts_dir        = M.installation_dir .. 'scripts' .. '/'
 
 -- Files
