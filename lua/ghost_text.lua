@@ -31,10 +31,10 @@ vim.env.NVIM_GHOST_LOGGING_ENABLED = bool_to_number(vim.g.nvim_ghost_logging_ena
 vim.env.GHOSTTEXT_SERVER_PORT      = vim.g.nvim_ghost_server_port
 
 -- Abort if script_mode is enabled but infeasible
-if vim.g.nvim_ghost_use_script == 1 then
+if vim.g.nvim_ghost_use_script then
     if vim.fn.has("win32") == 1 then
         vim.notify("Sorry, g:nvim_ghost_use_script is currently not available on Windows. Please remove it from your init.vim to use nvim-ghost.",vim.log.levels.WARN)
-    elseif vim.g.nvim_ghost_python_executable == 0 then
+    elseif not vim.g.nvim_ghost_python_executable then
         vim.notify("Please set g:nvim_ghost_python_executable to the location of the python executable",vim.log.levels.WARN)
     end
 end
