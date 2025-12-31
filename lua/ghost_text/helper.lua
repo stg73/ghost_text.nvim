@@ -41,7 +41,14 @@ end
 function M.server.start()
     local command
     if config.use_script then
-        command = { config.python_executable, config.script_path }
+        -- Abort if script_mode is enabled but infeasible
+        if is_windows then
+            M.notify("Sorry, config.use_script is currently not available on Windows.",vim.log.levels.WARN)
+        elseif not config.python_executable then
+            M.notify("Please set config.python_executable to the location of the python executable",vim.log.levels.WARN)
+        else
+            command = { config.python_executable, config.script_path }
+        end
     else
         if is_windows then
             command = { "cscript.exe", config.scripts_dir .. "start_server.vbs" }
@@ -50,16 +57,18 @@ function M.server.start()
         end
     end
 
-    vim.system(command,{
-        detach = true,
-        cwd = config.installation_dir,
-        stdout = function(_,data)
-            M.log(data,vim.log.levels.WARN)
-        end,
-        stderr = function(_,data)
-            M.log(data)
-        end,
-    })
+    if command then
+        vim.system(command,{
+            detach = true,
+            cwd = config.installation_dir,
+            stdout = function(_,data)
+                M.log(data,vim.log.levels.WARN)
+            end,
+            stderr = function(_,data)
+                M.log(data)
+            end,
+        })
+    end
 end
 
 local function send_GET_request(path)

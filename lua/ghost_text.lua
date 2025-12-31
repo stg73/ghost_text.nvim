@@ -3,15 +3,6 @@ local M = {}
 local config = require("ghost_text.config")
 local helper = require("ghost_text.helper")
 
--- Abort if script_mode is enabled but infeasible
-if config.use_script then
-    if vim.fn.has("win32") == 1 then
-        vim.notify("Sorry, config.use_script is currently not available on Windows. Please remove it from your init.vim to use nvim-ghost.",vim.log.levels.WARN)
-    elseif not config.python_executable then
-        vim.notify("Please set config.python_executable to the location of the python executable",vim.log.levels.WARN)
-    end
-end
-
 function M.start()
     local use_script = config.use_script
     local binary_available = vim.fn.filereadable(config.binary_path) == 1
