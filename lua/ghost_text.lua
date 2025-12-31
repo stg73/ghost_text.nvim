@@ -1,6 +1,7 @@
 local M = {}
 
 local config = require("ghost_text.config")
+local helper = require("ghost_text.helper")
 
 -- Abort if script_mode is enabled but infeasible
 if config.use_script then
@@ -31,15 +32,15 @@ end
 local function start_server_or_request_focus()
     -- If we start the server, we are already focused, so we don't need to
     -- request_focus separately
-    if not vim.fn["nvim_ghost#helper#is_running"]() then
-        vim.fn["nvim_ghost#helper#start_server"]()
+    if not helper.server.is_running() then
+        helper.server.start()
     else
-        vim.fn["nvim_ghost#helper#request_focus"]()
+        helper.server.request_focus()
     end
 end
 
 function M.stop()
-    vim.fn["nvim_ghost#helper#session_closed"]()
+    helper.servre.session_closed()
     vim.api.nvim_clear_autocmds({ group = "nvim_ghost"} )
     if not vim.g._nvim_ghost_supports_focus then
         vim.api.nvim_clear_autocmds({ group = "_nvim_ghost_does_not_support_focus" })
@@ -53,13 +54,13 @@ function M.enable()
     vim.api.nvim_create_autocmd("FocusGained",{
         group = group,
         callback = function()
-            vim.fn["nvim_ghost#helper#request_focus"]()
+            helper.server.request_focus()
         end,
     })
     vim.api.nvim_create_autocmd("VimLeavePre",{
         group = group,
         callback = function()
-            vim.fn["nvim_ghost#helper#session_closed"]()
+            helper.servre.session_closed()
         end,
     })
 
@@ -83,7 +84,7 @@ function M.enable()
         local focused = true
         local function focus_gained()
             if not focused then
-                vim.fn["nvim_ghost#helper#request_focus"]()
+                helper.server.request_focus()
                 focused = true
             end
         end
