@@ -6,9 +6,9 @@ local helper = require("ghost_text.helper")
 -- Abort if script_mode is enabled but infeasible
 if config.use_script then
     if vim.fn.has("win32") == 1 then
-        vim.notify("Sorry, g:nvim_ghost_use_script is currently not available on Windows. Please remove it from your init.vim to use nvim-ghost.",vim.log.levels.WARN)
+        vim.notify("Sorry, config.use_script is currently not available on Windows. Please remove it from your init.vim to use nvim-ghost.",vim.log.levels.WARN)
     elseif not config.python_executable then
-        vim.notify("Please set g:nvim_ghost_python_executable to the location of the python executable",vim.log.levels.WARN)
+        vim.notify("Please set config.python_executable to the location of the python executable",vim.log.levels.WARN)
     end
 end
 
@@ -23,7 +23,7 @@ function M.start()
     end
 
     if use_script and (not binary_available or versions_differ) then
-        vim.fn["nvim_ghost#installer#install"](M.enable)
+        require("ghost_text.installer").install(M.enable)
     else
         M.enable()
     end
@@ -40,7 +40,7 @@ local function start_server_or_request_focus()
 end
 
 function M.stop()
-    helper.servre.session_closed()
+    helper.server.session_closed()
     vim.api.nvim_clear_autocmds({ group = "nvim_ghost"} )
     if not vim.g._nvim_ghost_supports_focus then
         vim.api.nvim_clear_autocmds({ group = "_nvim_ghost_does_not_support_focus" })
@@ -60,7 +60,7 @@ function M.enable()
     vim.api.nvim_create_autocmd("VimLeavePre",{
         group = group,
         callback = function()
-            helper.servre.session_closed()
+            helper.server.session_closed()
         end,
     })
 

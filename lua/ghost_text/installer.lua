@@ -1,15 +1,13 @@
 local M = {}
 
-local function notify(msg,opts)
-    vim.notify("[nvim-ghost] " .. msg,opts)
-end
+local helper = require("ghost_text.helper")
 
 function M.install(callback)
-    if vim.fn["nvim_ghost#helper#is_running"]() then
-        vim.fn["nvim_ghost#helper#kill_server"]()
+    if helper.server.is_running() then
+        helper.server.kill()
     end
 
-    notify('Downloading binary')
+    helper.notify('Downloading binary')
 
     local scripts_dir = require("ghost_text.config").scripts_dir
     local command
@@ -30,10 +28,10 @@ function M.install(callback)
         end
         vim.notify(job.stdout .. job.stderr,level)
         if job.code == 0 then
-            notify('Binary installed sucessfully')
+            helper.notify('Binary installed sucessfully')
             callback()
         else
-            notify('Binary installation failed (exit code: ' .. job.code .. ')',level)
+            helper.notify('Binary installation failed (exit code: ' .. job.code .. ')',level)
         end
     end))
 end
