@@ -41,10 +41,7 @@ end
 function M.server.start()
     local command
     if config.use_script then
-        -- Abort if script_mode is enabled but infeasible
-        if is_windows then
-            M.notify("Sorry, config.use_script is currently not available on Windows.",vim.log.levels.WARN)
-        elseif not config.python_executable then
+        if not config.python_executable then
             M.notify("Please set config.python_executable to the location of the python executable",vim.log.levels.WARN)
         else
             command = { config.python_executable, config.script_path }
