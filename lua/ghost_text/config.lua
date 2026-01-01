@@ -14,7 +14,7 @@ M.scripts_dir        = M.installation_dir .. 'scripts' .. '/'
 
 -- Files
 M.script_path = M.installation_dir .. 'binary.py'
-M.binary_path = M.installation_dir .. 'nvim-ghost-binary' .. (vim.fn.has('win32') and '.exe' or '')
+M.binary_path = M.installation_dir .. 'nvim-ghost-binary' .. ((vim.fn.has('win32') == 1) and '.exe' or '')
 
 local function bool_to_number(x)
     if x then
