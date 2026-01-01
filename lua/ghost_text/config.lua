@@ -25,7 +25,6 @@ local function bool_to_number(x)
 end
 
 -- Setup environment
-vim.env.NVIM_LISTEN_ADDRESS        = vim.v.servername
 vim.env.NVIM_GHOST_SUPER_QUIET     = bool_to_number(M.super_quiet)
 vim.env.NVIM_GHOST_LOGGING_ENABLED = bool_to_number(M.logging_enabled)
 vim.env.GHOSTTEXT_SERVER_PORT      = M.server_port
