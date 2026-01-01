@@ -6,15 +6,26 @@ local helper = require("ghost_text.helper")
 function M.start()
     local use_script = config.use_script
     local binary_available = vim.fn.filereadable(config.binary_path) == 1
-    local versions_differ
+    local binary_version = vim.fn.readfile(config.installation_dir .. "binary_version")[1]
+    local installed_binary_version
     if binary_available then
-        versions_differ =
-        vim.fn.readfile(config.installation_dir .. "binary_version")[0] ~=
-        vim.fn.readfile(config.binary_path .. ".version")[0]
+        installed_binary_version = vim.fn.readfile(config.binary_path .. ".version")[1]
     end
 
-    if use_script and (not binary_available or versions_differ) then
-        require("ghost_text.installer").install(M.enable)
+    if not use_script and (not binary_available or binary_version ~= installed_binary_version) then
+        local target
+        local function has(str)
+            return vim.fn.has(str) == 1
+        end
+        if has("win64") then
+            target = "win64"
+        elseif has("mac") then
+            target = "macos"
+        elseif has("linux") then
+            target = "linux"
+        end
+
+        require("ghost_text.installer").install(binary_version,target,M.enable)
     else
         M.enable()
     end
