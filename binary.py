@@ -343,7 +343,7 @@ class GhostWebSocket(WebSocket):
         self.neovim_handle = pynvim.attach("socket", path=self.neovim_address)
         self.buffer_handle = self.neovim_handle.api.create_buf(False, True)
         self.neovim_handle.api.buf_set_option(self.buffer_handle, "bufhidden", "wipe")
-        self.neovim_handle.command(f"tabe | {self.buffer_handle.number}buffer")
+        self.neovim_handle.command(f"{self.buffer_handle.number}buffer")
         self.handle_neovim_notifications = True
         self._start_neovim_listener()
 
