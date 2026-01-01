@@ -41,11 +41,7 @@ end
 function M.server.start()
     local command
     if config.use_script then
-        if not config.python_executable then
-            M.notify("Please set config.python_executable to the location of the python executable",vim.log.levels.WARN)
-        else
-            command = { config.python_executable, config.script_path }
-        end
+        command = { config.python_executable or "python", config.script_path }
     else
         if is_windows then
             command = { "cscript.exe", config.scripts_dir .. "start_server.vbs" }
