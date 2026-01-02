@@ -1,10 +1,10 @@
 local M = {}
 
 -- Config
-M.use_script       = M.use_script or false
-M.super_quiet      = M.super_quiet or false
-M.logging_enabled  = M.logging_enabled or false
-M.server_port      = M.server_port or vim.env.GHOSTTEXT_SERVER_PORT or 4001
+M.use_script       = false
+M.super_quiet      = false
+M.logging_enabled  = false
+M.server_port      = vim.env.GHOSTTEXT_SERVER_PORT or 4001
 
 local function script_path()
   return debug.getinfo(2,'S').source:sub(2)
