@@ -38,6 +38,14 @@ function M.server.is_running()
     end
 end
 
+local function bool_to_number(x)
+    if x then
+        return 1
+    else
+        return 0
+    end
+end
+
 function M.server.start()
     local command
     if config.use_script then
@@ -54,6 +62,11 @@ function M.server.start()
         vim.system(command,{
             detach = true,
             cwd = config.installation_dir,
+            env = {
+                NVIM_GHOST_SUPER_QUIET = bool_to_number(M.super_quiet),
+                NVIM_GHOST_LOGGING_ENABLED = bool_to_number(M.logging_enabled),
+                GHOSTTEXT_SERVER_PORT = M.server_port,
+            },
             stdout = function(_,data)
                 M.log(data,vim.log.levels.WARN)
             end,

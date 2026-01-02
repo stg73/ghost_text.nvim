@@ -16,17 +16,4 @@ M.scripts_dir        = M.installation_dir .. 'scripts' .. '/'
 M.script_path = M.installation_dir .. 'binary.py'
 M.binary_path = M.installation_dir .. 'nvim-ghost-binary' .. ((vim.fn.has('win32') == 1) and '.exe' or '')
 
-local function bool_to_number(x)
-    if x then
-        return 1
-    else
-        return 0
-    end
-end
-
--- Setup environment
-vim.env.NVIM_GHOST_SUPER_QUIET     = bool_to_number(M.super_quiet)
-vim.env.NVIM_GHOST_LOGGING_ENABLED = bool_to_number(M.logging_enabled)
-vim.env.GHOSTTEXT_SERVER_PORT      = M.server_port
-
 return M
