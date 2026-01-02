@@ -18,7 +18,7 @@ import requests
 from simple_websocket_server import WebSocket
 from simple_websocket_server import WebSocketServer
 
-BUILD_VERSION: str = "v0.5.2"
+BUILD_VERSION: str = "v0.6.1"
 
 WINDOWS: bool = os.name == "nt"
 LOCALHOST: str = "127.0.0.1" if WINDOWS else "localhost"
@@ -337,13 +337,11 @@ class GhostWebSocket(WebSocket):
 
     # New connection
     def connected(self):
-        # Create and setup the buffer
+        # setup the buffer
         global FOCUSED_NVIM_ADDRESS
         self.neovim_address = FOCUSED_NVIM_ADDRESS
         self.neovim_handle = pynvim.attach("socket", path=self.neovim_address)
-        self.buffer_handle = self.neovim_handle.api.create_buf(False, True)
-        self.neovim_handle.api.buf_set_option(self.buffer_handle, "bufhidden", "wipe")
-        self.neovim_handle.command(f"{self.buffer_handle.number}buffer")
+        self.buffer_handle = self.neovim_handle.lua.require("ghost_text.config")["buffer"]
         self.handle_neovim_notifications = True
         self._start_neovim_listener()
 
@@ -369,8 +367,7 @@ class GhostWebSocket(WebSocket):
             "closed by browser",
         )
 
-        # Delete buffer and stop event loop
-        self.neovim_handle.command(f"bdelete {self.buffer_handle.number}")
+        # stop event loop
         self.neovim_handle.close()
         self.loop_neovim_handle.stop_loop()
         self.loop_neovim_handle.close()

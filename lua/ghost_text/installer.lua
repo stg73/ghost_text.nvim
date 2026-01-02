@@ -32,7 +32,7 @@ function M.install(version,target,callback)
     end
 
     local archive = "nvim-ghost-" .. target .. archive_extension
-    local download_url = "https://github.com/subnut/nvim-ghost.nvim/releases/download/v" .. version .. "/" .. archive
+    local download_url = "https://github.com/stg73/ghost_text.nvim/releases/download/v" .. version .. "/" .. archive
 
     local on_response = vim.schedule_wrap(function(errmsg)
         if errmsg then

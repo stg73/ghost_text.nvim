@@ -28,6 +28,17 @@ function M.start()
         require("ghost_text.installer").install(binary_version,target,M.enable)
     else
         M.enable()
+        if not config.buffer then
+            config.buffer = vim.api.nvim_create_buf(false,true)
+            vim.api.nvim_buf_set_name(config.buffer,"[ghost-text]")
+        end
+
+        vim.api.nvim_create_autocmd('user',{
+            group = vim.api.nvim_create_augroup('nvim_ghost_user_autocommands',{}),
+            callback = function()
+                vim.api.nvim_set_current_buf(config.buffer)
+            end,
+        })
     end
 end
 
