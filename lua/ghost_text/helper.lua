@@ -67,25 +67,25 @@ function M.server.start()
                 NVIM_GHOST_LOGGING_ENABLED = bool_to_number(M.logging_enabled),
                 GHOSTTEXT_SERVER_PORT = M.server_port,
             },
-            stdout = function(_,data)
-                M.log(data,vim.log.levels.WARN)
-            end,
-            stderr = function(_,data)
+            stdout = vim.schedule_wrap(function(_,data)
                 M.log(data)
-            end,
+            end),
+            stderr = vim.schedule_wrap(function(_,data)
+                M.log(data,vim.log.levels.WARN)
+            end),
         })
     end
 end
 
 local function send_GET_request(path)
     local authority = localhost .. ':' .. config.server_port
-    vim.net.request(authority .. path,{},function(errmsg,x)
+    vim.net.request(authority .. path,{},vim.schedule_wrap(function(errmsg,x)
         if x then
             M.log("Sent " .. path)
         else
             M.log("Could not connect to " .. authority,vim.log.levels.WARN)
         end
-    end)
+    end))
 end
 
 function M.server.kill()
