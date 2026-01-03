@@ -60,8 +60,11 @@ function M.install(version,target,callback)
                         vim.uv.fs_chmod(config.installation_dir .. binary,tonumber("777",8))
                     end
 
-                    callback()
                     helper.notify('Binary installed sucessfully')
+
+                    if callback then
+                        callback()
+                    end
                 end
             end)
 

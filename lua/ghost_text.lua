@@ -42,7 +42,15 @@ function M.start()
     end
 end
 
-local function start_server_or_request_focus()
+function M.stop()
+    helper.server.session_closed()
+    vim.api.nvim_clear_autocmds({ group = "nvim_ghost" })
+    if not config.supports_focus then
+        vim.api.nvim_clear_autocmds({ group = "_nvim_ghost_does_not_support_focus" })
+    end
+end
+
+function M.enable()
     -- If we start the server, we are already focused, so we don't need to
     -- request_focus separately
     if not helper.server.is_running() then
@@ -50,31 +58,15 @@ local function start_server_or_request_focus()
     else
         helper.server.request_focus()
     end
-end
-
-function M.stop()
-    helper.server.session_closed()
-    vim.api.nvim_clear_autocmds({ group = "nvim_ghost"} )
-    if not vim.g._nvim_ghost_supports_focus then
-        vim.api.nvim_clear_autocmds({ group = "_nvim_ghost_does_not_support_focus" })
-    end
-end
-
-function M.enable()
-    start_server_or_request_focus()
 
     local group = vim.api.nvim_create_augroup("nvim_ghost",{})
     vim.api.nvim_create_autocmd("FocusGained",{
         group = group,
-        callback = function()
-            helper.server.request_focus()
-        end,
+        callback = helper.server.request_focus,
     })
     vim.api.nvim_create_autocmd("VimLeavePre",{
         group = group,
-        callback = function()
-            helper.server.session_closed()
-        end,
+        callback = helper.server.session_closed,
     })
 
     vim.api.nvim_create_augroup("nvim_ghost_user_autocommands",{})
@@ -83,17 +75,6 @@ function M.enable()
     -- Uses CursorMoved to detect focus
 
     if not config.supports_focus then
-        config.supports_focus = false
-
-        -- vint: next-line -ProhibitAutocmdWithNoGroup
-        vim.api.nvim_create_autocmd({"FocusGained","FocusLost"},{
-            once = true,
-            callback = function()
-                config.supports_focus = true
-                vim.api.nvim_clear_autocmds({ group = "_nvim_ghost_does_not_support_focus" })
-            end
-        })
-
         local focused = true
         local function focus_gained()
             if not focused then
@@ -114,6 +95,18 @@ function M.enable()
             end,
         })
     end
+
+    -- 単に指定されなかっただけであれば自動検出する
+    if config.supports_focus == nil then
+        vim.api.nvim_create_autocmd({"FocusGained","FocusLost"},{
+            once = true,
+            callback = function()
+                config.supports_focus = true
+                vim.api.nvim_clear_autocmds({ group = "_nvim_ghost_does_not_support_focus" })
+            end
+        })
+    end
+
 end
 
 return M

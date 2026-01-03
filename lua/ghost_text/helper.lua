@@ -68,10 +68,14 @@ function M.server.start()
                 GHOSTTEXT_SERVER_PORT = M.server_port,
             },
             stdout = vim.schedule_wrap(function(_,data)
-                M.log(data)
+                if data then
+                    M.log(vim.trim(data))
+                end
             end),
             stderr = vim.schedule_wrap(function(_,data)
-                M.log(data,vim.log.levels.WARN)
+                if data then
+                    M.log(vim.trim(data))
+                end
             end),
         })
     end
