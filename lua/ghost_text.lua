@@ -51,13 +51,10 @@ function M.stop()
 end
 
 function M.enable()
-    -- If we start the server, we are already focused, so we don't need to
-    -- request_focus separately
     if not helper.server.is_running() then
         helper.server.start()
-    else
-        helper.server.request_focus()
     end
+    helper.server.request_focus()
 
     local group = vim.api.nvim_create_augroup("nvim_ghost",{})
     vim.api.nvim_create_autocmd("FocusGained",{
