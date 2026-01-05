@@ -81,6 +81,11 @@ function M.server.start()
     end
 end
 
+function M.server.restart()
+    M.server.kill()
+    M.server.start()
+end
+
 local function send_GET_request(path)
     local authority = localhost .. ':' .. config.server_port
     vim.net.request(authority .. path,{},vim.schedule_wrap(function(errmsg,x)
