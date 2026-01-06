@@ -51,10 +51,11 @@ if not SERVER_PORT.isdigit():
     if FOCUSED_NVIM_ADDRESS is not None:
         with pynvim.attach("socket", path=FOCUSED_NVIM_ADDRESS) as nvim_handle:
             if not SUPER_QUIET:
-                nvim_handle.command(
-                    "echom '[nvim-ghost] Invalid port. "
-                    "Please set $GHOSTTEXT_SERVER_PORT to a valid port.'"
-                )
+                nvim_handle.exec_lua("""
+                    require("ghost_text.helper").notify("Invalid port. " ..
+                    "Please set $GHOSTTEXT_SERVER_PORT to a valid port.",
+                    vim.log.levels.WARN)
+                """)
     sys.exit("Port must be a number")
 GHOST_PORT: int = int(SERVER_PORT)
 
@@ -440,7 +441,13 @@ class GhostWebSocket(WebSocket):
             logv(f"To {self.address[1]} sent", message)
 
     def _trigger_autocmds(self, url: str):
-        self.neovim_handle.command(f"doau nvim_ghost_user_autocommands User {url}")
+        self.neovim_handle.api.exec_autocmds("User",{
+            "group": "nvim_ghost_user_autocommands",
+            "pattern": url,
+            "data": {
+                "parsed_url": urllib.parse.urlparse(url)._asdict(),
+            },
+        })
 
     def _do_close(self):
         log(
@@ -515,7 +522,9 @@ print("Servers started")
 if FOCUSED_NVIM_ADDRESS is not None:
     with pynvim.attach("socket", path=FOCUSED_NVIM_ADDRESS) as nvim_handle:
         if not SUPER_QUIET:
-            nvim_handle.command("echom '[nvim-ghost] Servers started'")
+            nvim_handle.exec_lua("""
+                require("ghost_text.helper").notify("Servers started")
+            """)
 
 
 def _signal_handler(_signal, _):
