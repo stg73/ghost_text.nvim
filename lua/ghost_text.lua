@@ -3,7 +3,18 @@ local M = {}
 local config = require("ghost_text.config")
 local helper = require("ghost_text.helper")
 
-function M.start()
+function M.setup()
+    local function setup()
+        M.start()
+
+        vim.api.nvim_create_autocmd('user',{
+            group = vim.api.nvim_create_augroup('nvim_ghost_user_autocommands',{}),
+            callback = function()
+                vim.api.nvim_set_current_buf(config.buffer)
+            end,
+        })
+    end
+
     local use_script = config.use_script
     local binary_available = vim.fn.filereadable(config.binary_path) == 1
     local binary_version = vim.fn.readfile(config.installation_dir .. "binary_version")[1]
@@ -25,20 +36,9 @@ function M.start()
             target = "linux"
         end
 
-        require("ghost_text.installer").install(binary_version,target,M.enable)
+        require("ghost_text.installer").install(binary_version,target,setup)
     else
-        M.enable()
-        if not config.buffer then
-            config.buffer = vim.api.nvim_create_buf(false,true)
-            vim.api.nvim_buf_set_name(config.buffer,"[ghost-text]")
-        end
-
-        vim.api.nvim_create_autocmd('user',{
-            group = vim.api.nvim_create_augroup('nvim_ghost_user_autocommands',{}),
-            callback = function()
-                vim.api.nvim_set_current_buf(config.buffer)
-            end,
-        })
+        setup()
     end
 end
 
@@ -50,11 +50,16 @@ function M.stop()
     end
 end
 
-function M.enable()
+function M.start()
     if not helper.server.is_running() then
         helper.server.start()
     end
     helper.server.request_focus()
+
+    if not config.buffer then
+        config.buffer = vim.api.nvim_create_buf(false,true)
+        vim.api.nvim_buf_set_name(config.buffer,"[ghost-text]")
+    end
 
     local group = vim.api.nvim_create_augroup("nvim_ghost",{})
     vim.api.nvim_create_autocmd("FocusGained",{
