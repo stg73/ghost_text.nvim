@@ -18,7 +18,7 @@ import requests
 from simple_websocket_server import WebSocket
 from simple_websocket_server import WebSocketServer
 
-BUILD_VERSION: str = "v0.6.1"
+BUILD_VERSION: str = "v0.6.2"
 
 WINDOWS: bool = os.name == "nt"
 LOCALHOST: str = "127.0.0.1" if WINDOWS else "localhost"
@@ -190,8 +190,90 @@ class GhostHTTPRequestHandler(BaseHTTPRequestHandler):
         if path in responses_nodata:
             responses_nodata[path]()
 
-        if path in responses_data:
+        elif path in responses_data:
             responses_data[path](query)
+
+        else:
+            self.send_response(404)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            style = """\
+    *
+    {
+        margin: 0;
+    }
+    ul
+    {
+        padding-left: 1rem;
+    }
+    body
+    {
+        color-scheme: dark light;
+        color: CanvasText;
+        background-color: Canvas;
+
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        display: grid;
+        grid-template:
+            ".     .      ." 1fr
+            "index status ." auto
+            ".     .      ." 1fr
+           / 1fr   40%    1fr
+        ;
+        .status-img
+        {
+            grid-area: status;
+
+            width: 100%;
+        }
+        .index
+        {
+            grid-area: index;
+
+            display: grid;
+            grid-template:
+                ".   title ."
+                ".   .     ." 1rem
+                ".   list  ."
+                ".   .     ." 1fr
+               / 1fr auto  1fr
+            ;
+            h2
+            {
+                grid-area: title;
+            }
+            ul
+            {
+                grid-area: list;
+            }
+        }
+    }\
+"""
+            ul = [f'<li><a href="{path}">{path}</a></li>' for path in responses_nodata]
+            self.wfile.write(f"""\
+<!doctype html>
+<html>
+    <style>
+{style}
+    </style>
+    <body>
+        <img src="https://www.ace-compliance.com/blog/wp-content/uploads/IMG_4688.jpg"
+        alt="そんな物はない"
+        class="status-img">
+        <div class="index">
+            <h2>Index</h2>
+            <ul>
+                {f'\n{" " * 16}'.join(ul)}
+            </ul>
+        </div>
+    </body>
+</html>\
+""".encode("utf-8"))
 
     def _ghost_responder(self):
         """
