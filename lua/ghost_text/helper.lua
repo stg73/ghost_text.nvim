@@ -29,9 +29,9 @@ M.server = {}
 function M.server.is_running()
     local authority = localhost .. ':' .. config.server_port
     local opts = { data_buffered = true }
-    local ok,connection = pcall(vim.fn.sockconnect,'tcp',authority,opts)
-    if ok and connection ~= 0 then
-        vim.fn.chanclose(connection)
+    local ok,channel = pcall(vim.fn.sockconnect,'tcp',authority,opts)
+    if ok and channel ~= 0 then
+        vim.fn.chanclose(channel)
         return true
     else
         return false
@@ -86,27 +86,46 @@ function M.server.restart()
     M.server.start()
 end
 
-local function send_GET_request(path)
+function M.request(request,on_response)
     local authority = localhost .. ':' .. config.server_port
-    vim.net.request(authority .. path,{},vim.schedule_wrap(function(errmsg,x)
-        if x then
-            M.log("Sent " .. path)
-        else
-            M.log("Could not connect to " .. authority,vim.log.levels.WARN)
+    local ok,channel = pcall(vim.fn.sockconnect,"tcp",authority,{
+        on_data = function(channel,response)
+            vim.fn.chanclose(channel)
+            if on_response then
+                on_response(response)
+            end
+        end,
+        data_buffered = true,
+    })
+
+    if ok then
+        vim.fn.chansend(channel,request)
+    else
+        if not config.super_quiet then
+            M.notify("Could not connect to " .. authority,vim.log.levels.WARN)
         end
-    end))
+    end
+end
+
+function M.GET(path,on_response)
+    M.request("GET " .. path .. " HTTP/1.1" .. "\r\n\r\n",function(response)
+        M.log("Sent " .. path)
+        if on_response then
+            on_response(response)
+        end
+    end)
 end
 
 function M.server.kill()
-    send_GET_request('/exit')
+    M.GET('/exit')
 end
 
 function M.server.request_focus()
-    send_GET_request('/focus?focus=' .. vim.v.servername)
+    M.GET('/focus?focus=' .. vim.v.servername)
 end
 
 function M.server.session_closed()
-    send_GET_request('/session-closed?session=' .. vim.v.servername)
+    M.GET('/session-closed?session=' .. vim.v.servername)
     vim.fn.rpcnotify(0,"nvim_ghost_exit_event")
 end
 
