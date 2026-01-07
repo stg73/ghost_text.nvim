@@ -179,6 +179,7 @@ class GhostHTTPRequestHandler(BaseHTTPRequestHandler):
             "/version": self._version_responder,
             "/exit": self._exit_responder,
             "/is_ghost_binary": self._sanity_check_responder,
+            "/nvim_addresses": self._nvim_addresses_responder,
         }
 
         responses_data = {
@@ -320,6 +321,9 @@ class GhostHTTPRequestHandler(BaseHTTPRequestHandler):
 
         """
         self._respond("True")
+
+    def _nvim_addresses_responder(self):
+        self._respond("\n".join(NVIM_ADDRESSES))
 
     def _focus_responder(self, query_string):
         """
