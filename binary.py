@@ -43,13 +43,12 @@ SUPER_QUIET: bool = envbool("NVIM_GHOST_SUPER_QUIET")
 LOGGING_ENABLED: bool = envbool("NVIM_GHOST_LOGGING_ENABLED")
 VERBOSE_LOGGING: bool = envbool("NVIM_GHOST_VERBOSE_LOGGING")
 
-FOCUSED_NVIM_ADDRESS = None
 NVIM_ADDRESSES = []
 
 SERVER_PORT: str = os.environ.get("GHOSTTEXT_SERVER_PORT", "4001")
 if not SERVER_PORT.isdigit():
-    if FOCUSED_NVIM_ADDRESS is not None:
-        with pynvim.attach("socket", path=FOCUSED_NVIM_ADDRESS) as nvim_handle:
+    if len(NVIM_ADDRESSES) != 0:
+        with pynvim.attach("socket", path=NVIM_ADDRESSES[-1]) as nvim_handle:
             if not SUPER_QUIET:
                 nvim_handle.exec_lua("""
                     require("ghost_text.helper").notify("Invalid port. " ..
@@ -281,8 +280,7 @@ class GhostHTTPRequestHandler(BaseHTTPRequestHandler):
 
         """
 
-        global FOCUSED_NVIM_ADDRESS
-        if FOCUSED_NVIM_ADDRESS is None:
+        if len(NVIM_ADDRESSES) == 0:
             # There's no neovim instance to handle our request
             return
         # In f-strings, to insert literal {, we need to escape it using another {
@@ -332,14 +330,14 @@ class GhostHTTPRequestHandler(BaseHTTPRequestHandler):
         _, address = urllib.parse.parse_qsl(query_string)[0]
         self._respond(address)
 
-        global FOCUSED_NVIM_ADDRESS
-        if FOCUSED_NVIM_ADDRESS != address:
-            FOCUSED_NVIM_ADDRESS = address
+        global NVIM_ADDRESSES
+        if (NVIM_ADDRESSES[-1] if len(NVIM_ADDRESSES) != 0 else None) != address:
             log(f"Focus {address}")
 
-        global NVIM_ADDRESSES
-        if FOCUSED_NVIM_ADDRESS not in NVIM_ADDRESSES:
-            NVIM_ADDRESSES.append(FOCUSED_NVIM_ADDRESS)
+        if address in NVIM_ADDRESSES:
+            NVIM_ADDRESSES.remove(address)
+
+        NVIM_ADDRESSES.append(address)
 
     def _session_closed_responder(self, query_string):
         """
@@ -350,10 +348,6 @@ class GhostHTTPRequestHandler(BaseHTTPRequestHandler):
         _, address = urllib.parse.parse_qsl(query_string)[0]
         self._respond(address)
         log(f"{address} session closed")
-
-        global FOCUSED_NVIM_ADDRESS
-        if address == FOCUSED_NVIM_ADDRESS:
-            FOCUSED_NVIM_ADDRESS = None
 
         global NVIM_ADDRESSES
         NVIM_ADDRESSES.remove(address)
@@ -421,8 +415,7 @@ class GhostWebSocket(WebSocket):
     # New connection
     def connected(self):
         # setup the buffer
-        global FOCUSED_NVIM_ADDRESS
-        self.neovim_address = FOCUSED_NVIM_ADDRESS
+        self.neovim_address = NVIM_ADDRESSES[-1]
         self.neovim_handle = pynvim.attach("socket", path=self.neovim_address)
         self.buffer_handle = self.neovim_handle.lua.require("ghost_text.config")["buffer"]
         self.handle_neovim_notifications = True
@@ -601,8 +594,8 @@ if LOGGING_ENABLED:
 servers.http_server_thread.start()
 servers.websocket_server_thread.start()
 print("Servers started")
-if FOCUSED_NVIM_ADDRESS is not None:
-    with pynvim.attach("socket", path=FOCUSED_NVIM_ADDRESS) as nvim_handle:
+if len(NVIM_ADDRESSES) != 0:
+    with pynvim.attach("socket", path=NVIM_ADDRESSES[-1]) as nvim_handle:
         if not SUPER_QUIET:
             nvim_handle.exec_lua("""
                 require("ghost_text.helper").notify("Servers started")
