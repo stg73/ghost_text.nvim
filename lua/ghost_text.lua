@@ -76,6 +76,7 @@ function M.start()
     -- Compatibility for terminals that do not support focus
     -- Uses CursorMoved to detect focus
 
+    local group
     if not config.supports_focus then
         local focused = true
         local function focus_gained()
@@ -85,7 +86,7 @@ function M.start()
             end
         end
 
-        local group = vim.api.nvim_create_augroup("_nvim_ghost_does_not_support_focus",{})
+        group = vim.api.nvim_create_augroup("_nvim_ghost_does_not_support_focus",{})
         vim.api.nvim_create_autocmd({"CursorMoved","CursorMovedI"},{
             group = group,
             callback = focus_gained,
@@ -101,10 +102,10 @@ function M.start()
     -- 単に指定されなかっただけであれば自動検出する
     if config.supports_focus == nil then
         vim.api.nvim_create_autocmd({"FocusGained","FocusLost"},{
-            once = true,
+            group = group,
             callback = function()
                 config.supports_focus = true
-                vim.api.nvim_clear_autocmds({ group = "_nvim_ghost_does_not_support_focus" })
+                vim.api.nvim_del_augroup_by_id(group)
             end
         })
     end
