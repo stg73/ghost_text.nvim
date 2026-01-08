@@ -16,10 +16,10 @@ function M.install(version,target,callback)
     local archive_extension,binary
     if target == "win64" then
         archive_extension = ".zip"
-        binary = "nvim-ghost-binary.exe"
+        binary = "nvim-ghost-text.exe"
     elseif (target == "macos") or (target == "linux") then
         archive_extension = ".tar.gz"
-        binary = "nvim-ghost-binary"
+        binary = "nvim-ghost-text"
     else
         local your_system
         if type(target) == "string" then

@@ -47,7 +47,7 @@ jobs:
           pip install .
           cd ..
       - name: Build binary
-        run: pyinstaller --onefile --distpath . binary.py --name nvim-ghost-binary
+        run: pyinstaller --onefile --distpath . nvim-ghost-text.py --name nvim-ghost-text
       - name: Build package
         run: ${{ matrix.packaging_command }}
       - name: Get release
@@ -70,11 +70,11 @@ jobs:
           - os: macos-latest
             target: macos
             asset_name: nvim-ghost-macos.tar.gz
-            asset_path: binary.tar.gz
+            asset_path: nvim-ghost-text.tar.gz
             asset_type: application/gzip
             packaging_command: |
-              cp binary_version nvim-ghost-binary.version
-              tar -czf binary.tar.gz nvim-ghost-binary nvim-ghost-binary.version
+              cp binary_version nvim-ghost-text.version
+              tar -czf nvim-ghost-text.tar.gz nvim-ghost-text nvim-ghost-text.version
             upload_command: |
               curl -L \
                 -X POST \
@@ -91,11 +91,11 @@ jobs:
           - os: ubuntu-latest
             target: linux
             asset_name: nvim-ghost-linux.tar.gz
-            asset_path: binary.tar.gz
+            asset_path: nvim-ghost-text.tar.gz
             asset_type: application/gzip
             packaging_command: |
-              cp binary_version nvim-ghost-binary.version
-              tar -czf binary.tar.gz nvim-ghost-binary nvim-ghost-binary.version
+              cp binary_version nvim-ghost-text.version
+              tar -czf nvim-ghost-text.tar.gz nvim-ghost-text nvim-ghost-text.version
             upload_command: |
               curl -L \
                 -X POST \
@@ -112,11 +112,11 @@ jobs:
           - os: windows-latest
             target: win
             asset_name: nvim-ghost-win64.zip
-            asset_path: binary.zip
+            asset_path: nvim-ghost-text.zip
             asset_type: application/zip
             packaging_command: |
-              Copy-Item binary_version nvim-ghost-binary.exe.version
-              7z a -tzip binary.zip nvim-ghost-binary.exe nvim-ghost-binary.exe.version
+              Copy-Item binary_version nvim-ghost-text.exe.version
+              7z a -tzip nvim-ghost-text.zip nvim-ghost-text.exe nvim-ghost-text.exe.version
             upload_command: |
               Invoke-WebRequest `
                 -Method POST `

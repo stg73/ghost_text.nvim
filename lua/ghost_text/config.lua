@@ -13,7 +13,7 @@ M.installation_dir   = vim.fs.dirname(vim.fs.dirname(vim.fs.dirname(script_path(
 M.scripts_dir        = M.installation_dir .. 'scripts' .. '/'
 
 -- Files
-M.script_path = M.installation_dir .. 'binary.py'
-M.binary_path = M.installation_dir .. 'nvim-ghost-binary' .. ((vim.fn.has('win32') == 1) and '.exe' or '')
+M.script_path = M.installation_dir .. 'nvim-ghost-text.py'
+M.binary_path = M.installation_dir .. 'nvim-ghost-text' .. ((vim.fn.has('win32') == 1) and '.exe' or '')
 
 return M
